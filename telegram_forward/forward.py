@@ -49,6 +49,7 @@ async def telegram_monitor(
         username = (await client.get_me()).username
         logger.info(f'Logged into Telegram as user {username}')
         logger.info('Monitoring channel(s) for new messages...')
+        client.parse_mode = 'html'
 
         @client.on(events.NewMessage(chats=tg_channels, incoming=True))
         async def _(event):
