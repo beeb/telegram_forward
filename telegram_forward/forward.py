@@ -45,14 +45,15 @@ async def telegram_monitor(
 ):
     global logger
     async with TelegramClient('telegram_forward', tg_api_id, tg_api_hash) as client:
+        global logger
         username = (await client.get_me()).username
         logger.info(f'Logged into Telegram as user {username}')
-        logger.info('Monitoring channels for new messages...')
+        logger.info('Monitoring channel(s) for new messages...')
 
         @client.on(events.NewMessage(chats=tg_channels, incoming=True))
         async def _(event):
-            # event.raw_text
-            pass
+            logger.info('Got new message:')
+            logger.info(event.raw_text)
 
         await client.run_until_disconnected()
 
@@ -76,7 +77,6 @@ class TelegramUsernameOrLinkValidator(Validator):
 
 
 def main():
-    # questionary stuff
     api_id = questionary.text('Please provide your Telegram App api_id:', validate=IntegerValidator).unsafe_ask()
     tg_api_hash = questionary.password(
         'Please provide your secret Telegram App api_hash:', validate=TelegramApiHashValidator
