@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "telegram_forward"
+version = "0.1.0"
+description = "Bot that replicates incoming messages from a filtered list of groups/channels in Telegram to another channel."
+authors = ["Valentin Bersier <vbersier@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.scripts]
+forward = 'telegram_forward:main'
+
+[tool.poetry.dependencies]
+python = ">=3.7,<3.10"
+importlib-metadata = {version="^4.0.1", python="<3.8"}
+loguru = "^0.5.3"
+questionary = "^1.9.0"
+Telethon = "^1.21.1"
+eth-typing = "^2.2.2"
+eth-utils = "^1.10.0"
+
+[tool.poetry.dev-dependencies]
+flake8 = "^3.9.1"
+black = { version = "*", allow-prereleases = true }
+mypy = "<0.900"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
