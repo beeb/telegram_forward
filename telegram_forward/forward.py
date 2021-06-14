@@ -1,14 +1,10 @@
 import asyncio
 import logging
-import re
 import string
 import sys
-from collections import Counter
-from typing import List, Optional, Union
+from typing import List, Union
 
 import questionary
-from eth_typing.evm import ChecksumAddress
-from eth_utils.address import to_checksum_address
 from loguru import logger
 from questionary import ValidationError, Validator
 from telethon import TelegramClient, events
@@ -44,25 +40,19 @@ logger.add(
 logging.basicConfig(handlers=[InterceptHandler()], level=0)
 
 
-async def telegram_monitor(tg_api_id: int, tg_api_hash: str, tg_channels: List[Union[int, str]], forward_to):
+async def telegram_monitor(
+    tg_api_id: int, tg_api_hash: str, tg_channels: List[Union[int, str]], forward_to: Union[int, str]
+):
     global logger
     async with TelegramClient('telegram_forward', tg_api_id, tg_api_hash) as client:
         username = (await client.get_me()).username
         logger.info(f'Logged into Telegram as user {username}')
-        logger.info('Monitoring channel for new messages...')
+        logger.info('Monitoring channels for new messages...')
 
         @client.on(events.NewMessage(chats=tg_channels, incoming=True))
         async def _(event):
-            addr = [a.lower() for a in re.findall(r'0x[a-fA-F0-9]{40}', event.raw_text)]
-            counts = Counter(addr)
-            token_address: Optional[ChecksumAddress] = None
-            for a, _ in counts.most_common():
-                if a.startswith('0x000'):
-                    continue
-                token_address = to_checksum_address(a)
-                break
-            if token_address is not None:
-                logger.success(f'Found token address in telegram message: {token_address}')
+            # event.raw_text
+            pass
 
         await client.run_until_disconnected()
 
@@ -93,7 +83,7 @@ def main():
     ).unsafe_ask()
     channels = questionary.text(
         'Please provide the source channel(s) or chat(s) username(s) or ID(s)'
-        + ' (you can provide multiple values separated with a comma):',
+        + ' (you can provide multiple values separated with a comma, links accepted except for private groups):',
         validate=TelegramUsernameOrLinkValidator,
     ).unsafe_ask()
     channel_ids = [c.strip() for c in channels.split(',')]
@@ -108,8 +98,22 @@ def main():
     if not tg_channels:
         logger.error('Could not extract a chat ID, aborting')
         return
+    destination = questionary.text(
+        'Please provide the destination chat ID or username (links accepted except for private groups):',
+        validate=TelegramUsernameOrLinkValidator,
+    ).unsafe_ask()
+    try:
+        forward_to = int(destination)
+    except ValueError:
+        forward_to, _ = parse_username(destination)
+    if forward_to is None:
+        logger.error('Destination chat not valid, aborting')
+        return
+    logger.info(f'Starting to monitor chat(s): {", ".join([str(c) for c in tg_channels])}')
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(telegram_monitor(tg_api_id=int(api_id), tg_api_hash=tg_api_hash, tg_channels=tg_channels))
+    loop.run_until_complete(
+        telegram_monitor(tg_api_id=int(api_id), tg_api_hash=tg_api_hash, tg_channels=tg_channels, forward_to=forward_to)
+    )
 
 
 if __name__ == '__main__':

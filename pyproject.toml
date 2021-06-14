@@ -14,8 +14,6 @@ importlib-metadata = {version="^4.0.1", python="<3.8"}
 loguru = "^0.5.3"
 questionary = "^1.9.0"
 Telethon = "^1.21.1"
-eth-typing = "^2.2.2"
-eth-utils = "^1.10.0"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.9.1"
