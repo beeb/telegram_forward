@@ -53,8 +53,7 @@ async def telegram_monitor(
 
         @client.on(events.NewMessage(chats=tg_channels, incoming=True))
         async def _(event):
-            logger.info('Got new message:')
-            logger.info(event.raw_text)
+            logger.info(f'Forwarding message: {event.raw_text[:10]}...')
             await client.send_message(forward_to, event.raw_text)
 
         await client.run_until_disconnected()
