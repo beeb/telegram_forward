@@ -129,4 +129,5 @@ dmypy.json
 .pyre/
 
 telegram_forward.session
+telegram_forward.session-journal
 .vscode
